@@ -29,7 +29,6 @@ classifiers = [
     "Natural Language :: English  ",
     "Topic :: Software Development :: Libraries :: Python Modules ",
     "Typing :: Typed",
-    "License :: All Rights Reserved"
 ]
 
 [build-system]
