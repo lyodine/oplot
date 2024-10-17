@@ -34,19 +34,27 @@ CONTOUR_CMAP = "viridis"
 
 
 class DimensionError(ValueError):
+    """Raised when the dimension of a figure does not agree
+    with the plot.
+
+    When this happens, something is going seriously wrong.
+    """
     def __init__(self, expected: str, actual: str):
+        """
+        Args:
+            expected: Dimensions of the plot
+            actual: Dimensions of the figure
+        """
         super().__init__(f"Dimension mismatch: expected {expected}, got {actual}")
 
 
 def ensure_axes_dimension(axes: Axes | Axes3D,  # type: ignore[no-any-unimported]
                           dim: int) -> None:
-    """ Assert if the give Axes (or Axes3D) is of the specified dimension.
-    If not, create an Axes (or Axes3D) with the correct dimension.
+    """Assert if the given axes is of the specified dimension.
 
-    @param axes The Axes or Axes3D whose dimension is to be checked.
-    
-    @exception DimensionMismatchException if the first item does not
-    match the specified dimension.
+    Raises:
+        :class:`DimensionError`: if :arg:`dim` does not agree with the
+            dimension of :arg:`axes:.`
     """
     dimension_to_name = {2: "rectilinear", 3: "3d"}
     if dim in dimension_to_name:
@@ -57,27 +65,8 @@ def ensure_axes_dimension(axes: Axes | Axes3D,  # type: ignore[no-any-unimported
         logging.warning(f"The current projection is not `{dim}d`."
                         f"A new {"Axes" if dim == 2 else "Axes3D"} is created instead.")
 
-        #raise ValueError(f"The specified dimension cannot be checked.")
 
-
-def ensure_matrix_dimension(mat: Sequence[Sequence[float]] | np.ndarray,
-                            dim: int) -> None:
-    """ Examine if the first item in a sequence matches the given dimension.
-    If not, raise an exception.
-    @param mat A <del>matrix</del> sequence of sequences of numbers.
-    @exception DimensionMismatchException if the first item does not match the specified
-        dimension.
-    """
-    dimension_to_name = {2: 2, 3: 3}
-    mat_dim = len(mat[0])
-    if dim in dimension_to_name:
-        if (mat_dim != dimension_to_name[dim]):
-            raise DimensionError(str(dimension_to_name[dim]), str(mat_dim))
-    else:
-        raise ValueError("The specified dimension cannot be checked.")
-
-
-#  @var A 2-dimensional unit square. Immutable.
+#! Immutable 2-dimensional unit square.
 unit_square = np.array(
     [[0, 0],
      [0, 1],
@@ -87,7 +76,7 @@ unit_square = np.array(
 unit_square.flags.writeable = False
 
 
-# @var A 3-dimensional unit cube. Immutable.
+#! Immutable 3-dimensional unit cube. Fancy!
 unit_cube = np.array(
     [[0, 0, 0],
      [1, 0, 0],
@@ -102,11 +91,12 @@ unit_cube.flags.writeable = False
 
 
 def view_rotate(h_rotate: float, v_rotate: float) -> None:
-    """ Rotate the current Axes3D.
+    """Rotate the current `Axes3D`.
+
     @param h_rotate the degree to rotate vertically
     @param v_rotate the degree to rotate horizontally
     """
-    ax: Axes = plt.gca()
+    ax: Axes3D = plt.gca()  # type: ignore[no-any-unimported]
     ensure_axes_dimension(ax, 3)
     if (isinstance(ax, Axes3D)):  # Make mypy happy
         ax.view_init(h_rotate, v_rotate)
@@ -115,8 +105,15 @@ def view_rotate(h_rotate: float, v_rotate: float) -> None:
 
 
 def view_axis_pos(pos: Optional[str]) -> None:
-    """ Position labels and ticks of the current Axes3D.
-    @param pos the position, one of 'lower', 'upper', 'default', 'both', 'none', and None
+    """Position labels and ticks of the current Axes3D.
+
+    Args:
+        pos: The position, one of :python:`'lower'`,
+            :python:`'upper'`,
+            :python:`'default'`,
+            :python:`'both'`,
+            :python:`'none'`,
+            and :python:`None`.
     """
     accepted_values: list[str] = ['lower', 'upper', 'default', 'both', 'none']
     ax: Axes3D = plt.gca()  # type: ignore[no-any-unimported]
@@ -135,26 +132,50 @@ def view_axis_pos(pos: Optional[str]) -> None:
 
 
 def high_res() -> None:
-    """Update the current rcParams to generate figures with 200 DPI.
-    @effect Update rcParams.
+    """Set figures to render in higher resolution.
+
+    Set runtime configuration ``figure.dpi`` to 200.
+
+    Effect:
+        Change runtime configurations.
     """
     pylab.rcParams.update({'figure.dpi': 200})
+
+
+def low_res() -> None:
+    """Set figures to render in the default resolution.
+
+    Set runtime configuration ``figure.dpi`` to 100, the default value.
+
+    Effect:
+        Change runtime configurations.
+    """
+    pylab.rcParams.update({'figure.dpi': 100})
 
 
 def annotate(title: str,
              xlabel: str,
              ylabel: str,
              zlabel: Optional[str] = None) -> None:
-    """Add annotations (title, xlabel, ylabel) to the current figure.
-    Also set runtime configurations.
-    @param title Title of the figure
-    @param xlabel Labels for the x axis
-    @param ylabel Labels for the y axis
-    @param zlabel Labels for the z axis
-    @effect Plot to the current active figure; update rcParams.
+    """Annotate the current figure.
+
+    Set :arg:`title`, :arg:`xlabel`, and :arg:`ylabel` of the current axes.
+    Also set runtime configurations that style annotations.
+
+    To reset the parameters, call:
+    :python:`matplotlib.rcParams.update(matplotlib.rcParamsDefault)`
+
+    Args:
+        title: Title of the figure
+        xlabel: Labels for the x axis
+        ylabel: Labels for the y axis
+        zlabel: Labels for the z axis
+
+    Effect:
+        Plot to the current active figure.
+        Change runtime configurations.
     """
-    # import matplotlib.pylab as pylab
-    # To reset the parameters, use: matplotlib.rcParams.update(matplotlib.rcParamsDefault)
+
     axes_label_size: str = "x-large"
     plot_title_size: str = "x-large"
 
@@ -190,11 +211,15 @@ def annotate(title: str,
 def heatmap(data: ndarray,
             xlabels: Optional[Sequence[str]] = None,
             ylabels: Optional[Sequence[str]] = None) -> None:
-    """Plot a heatmap from a square matrix.
-    @param data A matrix.
-    @param xlabels Labels for cells along the x axis.
-    @param ylabels Labels for cells along the y axis.
-    @effect Plot to the current active Axes.
+    """Plot a matrix to the current active axis as a heatmap.
+
+    Args:
+        data: A Numpy matrix.
+        xlabels: labels for cells along the x axis.
+        ylabels: labels for cells along the x axis.
+
+    Effects:
+        Plot at the current active axis.
     """
     if not isinstance(data, ndarray):
         # If the input is not an numpy array, attempt to cast it into one.
@@ -203,34 +228,24 @@ def heatmap(data: ndarray,
     # Configure the size of the plot to accommodate the size of each cell
     plt.rcParams["figure.figsize"] = [len(data) * math.sqrt(len(data)),
                                       len(data[0]) * math.sqrt(len(data[0]))]
-    # if len(data) != len(data[0]):
-    #     raise Exception("Dimension check error, dimension mismatch")
 
     xlabels = xlabels if (xlabels is not None)\
         else ["X" + str(i) for i, _ in enumerate(data[0])]
     ylabels = ylabels if (ylabels is not None)\
         else ["Y" + str(i) for i, _ in enumerate(data)]
 
-    # fig, ax = plt.subplots()
-
     ax = plt.gca()
 
     ensure_axes_dimension(ax, 2)
     ax.imshow(data, cmap="Greys")
 
-    # Show all ticks and label them with the respective list entries
     ax.set_xticks(np.arange(len(xlabels)), labels=xlabels)
     ax.set_yticks(np.arange(len(ylabels)), labels=ylabels)
 
-    # Rotate the tick labels and set their alignment.
     plt.setp(ax.get_xticklabels(),
              rotation=45,
              ha="right",
              rotation_mode="anchor")
-
-    # Loop over data dimensions and create text annotations.
-    print(len(ylabels))
-    print(len(xlabels))
 
     max_cell_value = data.max()
     min_cell_value = data.min()
@@ -250,9 +265,15 @@ def heatmap(data: ndarray,
 
 
 def chull(shape: Annotated[ndarray, (..., 2)] | Annotated[ndarray, (..., 3)]) -> None:
-    """Plot a convex hull to the current active Axes.
-    @param shape A sequence of 2- or 3-dimensional points.
-    @effect Plot to the current active Axes.
+    """Plot a convex hull to the current active axes.
+
+    Detect the shape of points by inspecting the first in the sequence.
+
+    Args:
+        shape: A sequence of 2- or 3-dimensional points.
+
+    Effects:
+        Plot at the current active axis.
     """
     # Note that the checker only checks if the first element has the correct dimension.
     match len(shape[0]):
@@ -267,7 +288,6 @@ def chull(shape: Annotated[ndarray, (..., 2)] | Annotated[ndarray, (..., 3)]) ->
 def _chull_3d(shape: ndarray) -> None:
     ax: Axes3D = plt.gca()  # type: ignore[no-any-unimported]
     ensure_axes_dimension(ax, 3)
-    # color = 'r'
 
     hull = ConvexHull(shape)
     for s in hull.simplices:
@@ -318,11 +338,14 @@ def _chull_2d(points: ndarray) -> None:
 
 
 Vec2D = Annotated[Sequence[float], 2]
+
 Vec3D = Annotated[Sequence[float], 3]
 
 
 class BigArrow(FancyArrowPatch):
     """An 2- or 3-dimensional arrow.
+
+    :meta private:
     """
     def __init__(self,
                  start: Vec2D | Vec3D,
@@ -368,8 +391,10 @@ def arrow(start: Vec2D | Vec3D,
           *args: Any,
           **kwargs: Any) -> None:
     '''Plot an arrow to the current Axes or Axes3D.
-    @param start The starting point of the arrow
-    @param end The ending point of the arrow
+
+    Args:
+        start: The starting point of the arrow.
+        end: The ending point of the arrow.
 
     '''
     ax = plt.gca()
@@ -387,9 +412,11 @@ def plot(fun: Callable[[Array2D], Array2D],
          *args: ArrayLike,
          **kwargs: Any) -> None:
     '''Plot a contour map to the current Axes or Axes3D.
-    @param fun The function to plot
-    @param x_range A tuple of the beginning and end of the x axis
-    @param density the number of points sampled over each axis
+
+    Args:
+        fun: The function to plot.
+        x_range: A tuple of the beginning and end of the x axis.
+        density: the number of points sampled over each axis.
     '''
     ax = plt.gca()
     x_max: float = max(x_range)
@@ -427,13 +454,15 @@ def contour(fun: Callable[[Array2D, Array2D], Array2D],
             colorbar: bool = True,
             alpha: float = 0.5) -> None:
     '''Plot a contour map to the current Axes or Axes3D.
-    @param fun The function to plot
-    @param x_range A tuple of the beginning and end of the x axis
-    @param y_range A tuple of the beginning and end of the y axis
-    @param Density the number of points sampled over each axis
-    @param levels The number of contour lines
-    @param cmap The colour map used by the contour map
-    @param colorbar If True, draw the colour bar
+
+    Args:
+        fun: The function to plot.
+        x_range: A tuple of the beginning and end of the x axis.
+        y_range: A tuple of the beginning and end of the y axis.
+        density: the number of points sampled over each axis.
+        levels: The number of contour lines.
+        cmap: The colour map used by the contour map.
+        colorbar: If True, draw the colour bar.
     '''
     ax = plt.gca()
     xs, ys, zs = _make_zs(fun, x_range, y_range, density)
@@ -453,6 +482,16 @@ def wireframe(fun:  # type: ignore[no-any-unimported]
               density: int = 100,
               cmap: str = CONTOUR_CMAP,
               alpha: float = 0.9) -> Line3DCollection:
+    '''Plot a wireframe map to the current Axes or Axes3D.
+
+    Args:
+        fun: The function to plot.
+        x_range: A tuple of the beginning and end of the x axis.
+        y_range: A tuple of the beginning and end of the y axis.
+        density: the number of points sampled over each axis.
+        cmap: The colour map used by the contour map.
+        alpha: Alpha value (transparency) of the frame.
+    '''
     ax: Axes3D = plt.gca()  # type: ignore[no-any-unimported]
     xs, ys, zs = _make_zs(fun, x_range, y_range, density)
     ax.set_aspect('equal')  # Very important, otherwise axes use different scales.
