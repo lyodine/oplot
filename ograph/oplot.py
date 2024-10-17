@@ -17,10 +17,10 @@ from scipy.spatial import ConvexHull, distance  # type: ignore[import-untyped]
 from matplotlib.axes import Axes
 from matplotlib.patches import FancyArrowPatch
 
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection  # type: ignore[import-untyped]
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection  # type: ignore[import-untyped] # noqa: E501
 from mpl_toolkits.mplot3d.axes3d import Axes3D  # type: ignore[import-untyped]
 from mpl_toolkits.mplot3d.art3d import Line3DCollection
-from mpl_toolkits.mplot3d.proj3d import proj_transform  # type: ignore[import-untyped]
+from mpl_toolkits.mplot3d.proj3d import proj_transform  # type: ignore[import-untyped] # noqa: E501
 
 from numpy import ndarray
 
@@ -45,10 +45,11 @@ class DimensionError(ValueError):
             expected: Dimensions of the plot
             actual: Dimensions of the figure
         """
-        super().__init__(f"Dimension mismatch: expected {expected}, got {actual}")
+        super().__init__(f"Dimension mismatch: expected {expected},"
+                         f" got {actual}")
 
 
-def ensure_axes_dimension(axes: Axes | Axes3D,  # type: ignore[no-any-unimported]
+def ensure_axes_dimension(axes: Axes | Axes3D,  # type: ignore[no-any-unimported] # noqa: E501
                           dim: int) -> None:
     """Assert if the given axes is of the specified dimension.
 
@@ -63,7 +64,8 @@ def ensure_axes_dimension(axes: Axes | Axes3D,  # type: ignore[no-any-unimported
     else:
         of.fig3() if dim == 3 else of.fig2()
         logging.warning(f"The current projection is not `{dim}d`."
-                        f"A new {"Axes" if dim == 2 else "Axes3D"} is created instead.")
+                        f"A new {"Axes" if dim == 2 else "Axes3D"}"
+                        " is created instead.")
 
 
 #! Immutable 2-dimensional unit square.
@@ -101,7 +103,8 @@ def view_rotate(h_rotate: float, v_rotate: float) -> None:
     if (isinstance(ax, Axes3D)):  # Make mypy happy
         ax.view_init(h_rotate, v_rotate)
     else:
-        raise Exception("This should not happen. The exception has been checked.")
+        raise Exception("This should not happen."
+                        "The exception has been checked.")
 
 
 def view_axis_pos(pos: Optional[str]) -> None:
@@ -264,7 +267,8 @@ def heatmap(data: ndarray,
         my_fig.tight_layout()
 
 
-def chull(shape: Annotated[ndarray, (..., 2)] | Annotated[ndarray, (..., 3)]) -> None:
+def chull(shape:
+          Annotated[ndarray, (..., 2)] | Annotated[ndarray, (..., 3)]) -> None:
     """Plot a convex hull to the current active axes.
 
     Detect the shape of points by inspecting the first in the sequence.
@@ -275,7 +279,7 @@ def chull(shape: Annotated[ndarray, (..., 2)] | Annotated[ndarray, (..., 3)]) ->
     Effects:
         Plot at the current active axis.
     """
-    # Note that the checker only checks if the first element has the correct dimension.
+    # The checker only checks if the first element has the correct dimension.
     match len(shape[0]):
         case 2:
             _chull_2d(shape)
@@ -322,19 +326,27 @@ def _chull_3d(shape: ndarray) -> None:
                     zs=shape[[v0, v1], 2],
                     **EDGE_COLOR)
 
-    ax.scatter(shape[:, 0], shape[:, 1], shape[:, 2], marker='o', **VERTEX_COLOR)
+    ax.scatter(shape[:, 0],
+               shape[:, 1],
+               shape[:, 2],
+               marker='o',
+               **VERTEX_COLOR)
 
 
 def _chull_2d(points: ndarray) -> None:
     ax = plt.gca()
     ensure_axes_dimension(ax, 2)
     hull = ConvexHull(points)
-    ax.plot(points[:, 0], points[:, 1], 'o', **VERTEX_COLOR)  # type: ignore[arg-type]
+    ax.plot(points[:, 0], points[:, 1], 'o', **VERTEX_COLOR)  # type: ignore[arg-type] # noqa: E501
     for simplex in hull.simplices:
         ax.plot(points[simplex, 0],
                 points[simplex, 1],
                 **EDGE_COLOR)  # type: ignore[arg-type]
-    ax.fill(points[hull.vertices, 0], points[hull.vertices, 1], lw=2, **FILL_COLOR)
+
+    ax.fill(points[hull.vertices, 0],
+            points[hull.vertices, 1],
+            lw=2,
+            **FILL_COLOR)
 
 
 Vec2D = Annotated[Sequence[float], 2]
@@ -377,11 +389,12 @@ class BigArrow(FancyArrowPatch):
         #   https://github.com/matplotlib/matplotlib/blob/v3.8.2/lib/
         #       mpl_toolkits/mplot3d/art3d.py#L998-L1065
         #   appears to return np.min(tzs).
-        # Removing it does not seem to change anything. Still, just to be safe...
+        # Removing it does not seem to change anything. Still, just to be safe.
         if self.axes is None or not isinstance(self.axes, Axes3D):
             raise Exception("Rendered without axes")
         else:
-            txs, tys, tzs = proj_transform(*zip(self.start, self.end), self.axes.M)
+            txs, tys, tzs = proj_transform(*zip(self.start, self.end),
+                                           self.axes.M)
             self.set_positions((txs[0], tys[0]), (txs[1], tys[1]))
             return np.min(tzs)
 
@@ -398,7 +411,8 @@ def arrow(start: Vec2D | Vec3D,
 
     '''
     ax = plt.gca()
-    # Type checking `ax` is necessary, since the arrow class can handle the difference.
+    # Type checking `ax` is necessary, since the arrow
+    #       class can handle the difference.
     #   Plotting to 2D (projection='rectilinear') Axes calls `draw`.
     #   Plotting to 3D (projection='3d') calls do_3d_projection.
     #   Still, this function might not work for other projections.
@@ -466,9 +480,11 @@ def contour(fun: Callable[[Array2D, Array2D], Array2D],
     '''
     ax = plt.gca()
     xs, ys, zs = _make_zs(fun, x_range, y_range, density)
-    ax.set_aspect('equal')  # Very important, otherwise axes use different scales.
+    ax.set_aspect('equal')  # Very important, otherwise axes use different scales. # noqa: E501
     cs = ax.contour(xs, ys, zs, levels=levels, cmap=cmap,
-                    norm=colors.Normalize(vmin=zs.min(), vmax=zs.max()), alpha=alpha)
+                    norm=colors.Normalize(vmin=zs.min(),
+                                          vmax=zs.max()),
+                    alpha=alpha)
 
     current_figure = ax.get_figure()
     if colorbar and current_figure is not None:
@@ -494,14 +510,15 @@ def wireframe(fun:  # type: ignore[no-any-unimported]
     '''
     ax: Axes3D = plt.gca()  # type: ignore[no-any-unimported]
     xs, ys, zs = _make_zs(fun, x_range, y_range, density)
-    ax.set_aspect('equal')  # Very important, otherwise axes use different scales.
+    ax.set_aspect('equal')  # Very important, otherwise axes use different scales. # noqa: E501
     return ax.plot_wireframe(xs, ys, zs,
                              cmap=cmap,
-                             norm=colors.Normalize(vmin=zs.min(), vmax=zs.max()),
+                             norm=colors.Normalize(vmin=zs.min(),
+                                                   vmax=zs.max()),
                              alpha=alpha)
 
 
-def surface(fun: Callable[[Array2D, Array2D], Array2D],  # type: ignore[no-any-unimported]
+def surface(fun: Callable[[Array2D, Array2D], Array2D],  # type: ignore[no-any-unimported] # noqa: E501
             x_range: Vec2D,
             y_range: Vec2D,
             density: int = 100,
@@ -510,7 +527,7 @@ def surface(fun: Callable[[Array2D, Array2D], Array2D],  # type: ignore[no-any-u
             alpha: float = 0.9) -> Line3DCollection:
     ax: Axes3D = plt.gca()  # type: ignore[no-any-unimported]
     xs, ys, zs = _make_zs(fun, x_range, y_range, density)
-    ax.set_aspect('equal')  # Very important, otherwise axes use different scales.
+    ax.set_aspect('equal')  # Very important, otherwise axes use different scales. # noqa: E501
     cs = ax.plot_surface(xs, ys, zs,
                          cmap=cmap,
                          norm=colors.Normalize(vmin=zs.min(), vmax=zs.max()),

@@ -11,7 +11,7 @@ def rosenbrock(*args: float) -> float:
 
 
 def himmelblau(x: float, y: float) -> float:
-    """Rosenbrock function.
+    """Himmelblau function.
 
     2-dimensional test function with several minimum.
     """

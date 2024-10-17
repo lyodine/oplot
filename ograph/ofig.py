@@ -1,8 +1,5 @@
 """
     Custom plotting library.
-
-    A point of improvement: create a global manager pool, so that the manager count does
-        not leak.
 """
 
 import matplotlib.pyplot as plt
@@ -27,11 +24,13 @@ def fig2(xlims: Optional[Tuple[float, float]] = None,
     Args:
         arg: :python:`None` or 4-tuple.
 
-            - :python:`None`: A new full window Axes is added using ``subplot(**kwargs)``.
+            - :python:`None`: A new full window Axes is added using
+              ``subplot(**kwargs)``.
 
             - 4-tuple of floats *rect* = ``(left, bottom, width, height)``:
               Add a new Axes with dimensions *rect* in normalized
-              (0, 1) units, using :meth:`Figure.add_axes` on the current figure.
+              (0, 1) units, using :meth:`Figure.add_axes` on the current
+              figure.
 
         xlims: Size of figure along the X axis
         ylims: Size of figure along the Y axis
@@ -47,7 +46,7 @@ def fig2(xlims: Optional[Tuple[float, float]] = None,
     return (fig, ax)
 
 
-def fig3(xlims: Optional[Tuple[float, float]] = None,  # type: ignore[no-any-unimported]
+def fig3(xlims: Optional[Tuple[float, float]] = None,  # type: ignore[no-any-unimported] # noqa: E501
          ylims: Optional[Tuple[float, float]] = None,
          zlims: Optional[Tuple[float, float]] = None,
          arg: None | tuple[float, float, float, float] = None,
@@ -62,11 +61,13 @@ def fig3(xlims: Optional[Tuple[float, float]] = None,  # type: ignore[no-any-uni
     Args:
         arg: :python:`None` or 4-tuple.
 
-            - :python:`None`: A new full window Axes is added using ``subplot(**kwargs)``.
+            - :python:`None`: A new full window Axes is added using
+              ``subplot(**kwargs)``.
 
             - 4-tuple of floats *rect* = ``(left, bottom, width, height)``:
               Add a new Axes with dimensions *rect* in normalized
-              (0, 1) units, using :meth:`Figure.add_axes` on the current figure.
+              (0, 1) units, using :meth:`Figure.add_axes` on the current
+              figure.
 
         xlims: Size of figure along the X axis
         ylims: Size of figure along the Y axis
