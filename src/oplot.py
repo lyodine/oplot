@@ -2,7 +2,9 @@ import matplotlib.pyplot as plt
 import matplotlib.pylab as pylab
 import matplotlib.colors as colors
 import numpy as np
-import ofig as of
+
+from . import ofig as of
+
 import logging
 from typing import TypeAlias, Any, Self
 import math
