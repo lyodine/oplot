@@ -42,7 +42,9 @@ def ensure_axes_dimension(axes: Axes | Axes3D,  # type: ignore[no-any-unimported
                           dim: int) -> None:
     """ Assert if the give Axes (or Axes3D) is of the specified dimension.
     If not, create an Axes (or Axes3D) with the correct dimension.
+
     @param axes The Axes or Axes3D whose dimension is to be checked.
+    
     @exception DimensionMismatchException if the first item does not
     match the specified dimension.
     """

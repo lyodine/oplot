@@ -1,8 +1,10 @@
 """
     Custom plotting library.
+
     A point of improvement: create a global manager pool, so that the manager count does
         not leak.
 """
+
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
