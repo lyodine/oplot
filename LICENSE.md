@@ -1,0 +1,1 @@
+All rights reserved for the time being.
