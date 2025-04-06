@@ -25,11 +25,12 @@ from mpl_toolkits.mplot3d.proj3d import proj_transform  # type: ignore[import-un
 from numpy import ndarray
 
 Array2D: TypeAlias = Annotated[ndarray, (2, 2)]
+Array3D: TypeAlias = Annotated[ndarray, (2, 2, 2)]
 
 
-FILL_COLOR: dict[str, str | float] = {"alpha": 0.5}
-EDGE_COLOR = {"color": "black", "alpha": 1}
-VERTEX_COLOR = {"color": "black", "alpha": 0.5}
+FILL_CONFIG: dict[str, str | float] = {"alpha": 0.5}
+EDGE_CONFIG = {"color": "black", "alpha": 1}
+VERTEX_CONFIG = {"color": "black", "alpha": 0.5}
 CONTOUR_CMAP = "viridis"
 
 
@@ -297,10 +298,10 @@ def _chull_3d(shape: ndarray) -> None:
     for s in hull.simplices:
         tri = Poly3DCollection([shape[s]])
 
-        if "alpha" in FILL_COLOR:
-            tri.set_alpha(FILL_COLOR["alpha"])
-        if "color" in FILL_COLOR:
-            tri.set_color(FILL_COLOR["color"])
+        if "alpha" in FILL_CONFIG:
+            tri.set_alpha(FILL_CONFIG["alpha"])
+        if "color" in FILL_CONFIG:
+            tri.set_color(FILL_CONFIG["color"])
 
         tri.set_edgecolor('none')
         ax.add_collection3d(tri)
@@ -324,29 +325,29 @@ def _chull_3d(shape: ndarray) -> None:
             ax.plot(xs=shape[[v0, v1], 0],
                     ys=shape[[v0, v1], 1],
                     zs=shape[[v0, v1], 2],
-                    **EDGE_COLOR)
+                    **EDGE_CONFIG)
 
     ax.scatter(shape[:, 0],
                shape[:, 1],
                shape[:, 2],
                marker='o',
-               **VERTEX_COLOR)
+               **VERTEX_CONFIG)
 
 
 def _chull_2d(points: ndarray) -> None:
     ax = plt.gca()
     ensure_axes_dimension(ax, 2)
     hull = ConvexHull(points)
-    ax.plot(points[:, 0], points[:, 1], 'o', **VERTEX_COLOR)  # type: ignore[arg-type] # noqa: E501
+    ax.plot(points[:, 0], points[:, 1], 'o', **VERTEX_CONFIG)  # type: ignore[arg-type] # noqa: E501
     for simplex in hull.simplices:
         ax.plot(points[simplex, 0],
                 points[simplex, 1],
-                **EDGE_COLOR)  # type: ignore[arg-type]
+                **EDGE_CONFIG)  # type: ignore[arg-type]
 
     ax.fill(points[hull.vertices, 0],
             points[hull.vertices, 1],
             lw=2,
-            **FILL_COLOR)
+            **FILL_CONFIG)
 
 
 Vec2D = Annotated[Sequence[float], 2]
@@ -539,3 +540,65 @@ def surface(fun: Callable[[Array2D, Array2D], Array2D],  # type: ignore[no-any-u
     if colorbar:
         ax.get_figure().colorbar(cs)
     return cs
+
+def splatter(fun: Callable[[Array2D], Array2D],
+             x_range: Vec2D,
+             density: int = 30,
+             plot_links: bool = False,
+             edge_args: dict[str, Any] = {},
+             node_args: dict[str, Any] = {},
+             fill_args: dict[str, Any] = {})-> None:
+    
+    fun = np.vectorize(fun)
+    
+    xs = _make_plot_points(fun, x_range, density)
+    
+    shatter(xs=xs,
+            ys=fun(xs),
+            plot_links=plot_links,
+            edge_args=edge_args,
+            node_args=node_args,
+            fill_args=fill_args)
+    
+
+def shatter(xs, ys,
+            plot_links = False,
+            edge_args: dict[str, Any]={},
+            node_args: dict[str, Any]={},
+            fill_args: dict[str, Any]={},
+            color: Optional[str] = None) -> None:
+    
+    edge_args = EDGE_CONFIG | edge_args
+    node_args = NODE_CONFIG | node_args
+    fill_args = EDGE_CONFIG | fill_args
+
+    ax = plt.gca()
+
+    # Override edge alpha
+    if color is not None:
+        edge_args["color"] = color
+
+    line_color = matplotlib.colors.colorConverter.to_rgba(
+        edge_args.get("color"),
+        edge_args.get("alpha"))
+    
+    old_x = old_y = None
+
+    if (plot_links):
+        ax.plot((min(xs), max(xs)), (0, 0), color=line_color, linewidth=1, zorder=-1)
+
+    for (x, y) in zip(xs, ys):
+        ax.plot([x, x], [0, y], **edge_args, zorder=0, linewidth=1)
+        ax.scatter(x, y, zorder=4,
+                   facecolor=node_args.get("color"),
+                   edgecolors=line_color, linewidth=1.5)
+
+        if (plot_links):
+            
+            if old_x is not None and old_y is not None:
+                #Hull it
+                ax.plot((old_x, x), (old_y, y), color="#696969", linewidth=0.5, zorder=-1)
+                ax.fill_between((old_x, x), (old_y, y), zorder=-2, color="#F5F5F5")
+
+        old_x = x
+        old_y = y
