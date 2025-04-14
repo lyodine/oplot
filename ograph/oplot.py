@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.pylab as pylab
 import matplotlib.colors as colors
 import numpy as np
+import matplotlib as mpl
 
 from . import ofig as of
 
@@ -30,7 +31,7 @@ Array3D: TypeAlias = Annotated[ndarray, (2, 2, 2)]
 
 FILL_CONFIG: dict[str, str | float] = {"alpha": 0.5}
 EDGE_CONFIG = {"color": "black", "alpha": 1}
-VERTEX_CONFIG = {"color": "black", "alpha": 0.5}
+NODE_CONFIG = {"color": "black", "alpha": 0.5}
 CONTOUR_CMAP = "viridis"
 
 
@@ -331,14 +332,14 @@ def _chull_3d(shape: ndarray) -> None:
                shape[:, 1],
                shape[:, 2],
                marker='o',
-               **VERTEX_CONFIG)
+               **NODE_CONFIG)
 
 
 def _chull_2d(points: ndarray) -> None:
     ax = plt.gca()
     ensure_axes_dimension(ax, 2)
     hull = ConvexHull(points)
-    ax.plot(points[:, 0], points[:, 1], 'o', **VERTEX_CONFIG)  # type: ignore[arg-type] # noqa: E501
+    ax.plot(points[:, 0], points[:, 1], 'o', **NODE_CONFIG)  # type: ignore[arg-type] # noqa: E501
     for simplex in hull.simplices:
         ax.plot(points[simplex, 0],
                 points[simplex, 1],
@@ -437,7 +438,7 @@ def plot(fun: Callable[[Array2D], Array2D],
     x_max: float = max(x_range)
     x_min: float = min(x_range)
     xs = np.arange(x_min, x_max, (x_max - x_min) / density)
-    ys = fun(xs)
+    ys = tuple(fun(x) for x in xs)
     ax.plot(xs, ys, *args, **kwargs)
 
 
@@ -498,7 +499,8 @@ def wireframe(fun:  # type: ignore[no-any-unimported]
               y_range: Vec2D,
               density: int = 100,
               cmap: str = CONTOUR_CMAP,
-              alpha: float = 0.9) -> Line3DCollection:
+              alpha: float = 0.9,
+              **kwargs) -> Line3DCollection:
     '''Plot a wireframe map to the current Axes or Axes3D.
 
     Args:
@@ -516,7 +518,8 @@ def wireframe(fun:  # type: ignore[no-any-unimported]
                              cmap=cmap,
                              norm=colors.Normalize(vmin=zs.min(),
                                                    vmax=zs.max()),
-                             alpha=alpha)
+                             alpha=alpha,
+                             **kwargs)
 
 
 def surface(fun: Callable[[Array2D, Array2D], Array2D],  # type: ignore[no-any-unimported] # noqa: E501
@@ -541,64 +544,108 @@ def surface(fun: Callable[[Array2D, Array2D], Array2D],  # type: ignore[no-any-u
         ax.get_figure().colorbar(cs)
     return cs
 
+
+def _make_plot_points(fun: Callable[[Array2D], Array2D],
+                      x_range: Vec2D,
+                      density: int = 20) -> Array2D:
+    x_max: float = max(x_range)
+    x_min: float = min(x_range)
+    return np.arange(x_min, x_max, (x_max - x_min) / density, dtype=np.float64) #complex128
+
+
 def splatter(fun: Callable[[Array2D], Array2D],
              x_range: Vec2D,
              density: int = 30,
              plot_links: bool = False,
+             *,
              edge_args: dict[str, Any] = {},
              node_args: dict[str, Any] = {},
-             fill_args: dict[str, Any] = {})-> None:
-    
-    fun = np.vectorize(fun)
-    
+             fill_args: dict[str, Any] = {}) -> None:
+
     xs = _make_plot_points(fun, x_range, density)
-    
+
     shatter(xs=xs,
-            ys=fun(xs),
-            plot_links=plot_links,
-            edge_args=edge_args,
-            node_args=node_args,
-            fill_args=fill_args)
-    
+            ys=tuple(fun(x) for x in xs),
+            plot_links=plot_links)
+
 
 def shatter(xs, ys,
-            plot_links = False,
-            edge_args: dict[str, Any]={},
-            node_args: dict[str, Any]={},
-            fill_args: dict[str, Any]={},
-            color: Optional[str] = None) -> None:
-    
-    edge_args = EDGE_CONFIG | edge_args
-    node_args = NODE_CONFIG | node_args
-    fill_args = EDGE_CONFIG | fill_args
+            plot_links: bool = False,
+            *,
+            edge_config: dict[str, Any] = {},
+            node_config: dict[str, Any] = {},
+            fill_config: dict[str, Any] = {}) -> None:
+
+    edge_args = EDGE_CONFIG | edge_config
+    node_args = node_config
+    fill_args = FILL_CONFIG | fill_config
 
     ax = plt.gca()
 
     # Override edge alpha
-    if color is not None:
-        edge_args["color"] = color
 
-    line_color = matplotlib.colors.colorConverter.to_rgba(
-        edge_args.get("color"),
-        edge_args.get("alpha"))
-    
+    line_color = mpl.colors.colorConverter.to_rgba(
+        edge_args.get("color"),  # type: ignore[arg-type]
+        edge_args.get("alpha")  # type: ignore[arg-type]
+    )
+
     old_x = old_y = None
 
     if (plot_links):
-        ax.plot((min(xs), max(xs)), (0, 0), color=line_color, linewidth=1, zorder=-1)
+        ax.plot((min(xs), max(xs)), (0, 0),
+                color=line_color,
+                linewidth=1,
+                zorder=-1)
 
     for (x, y) in zip(xs, ys):
-        ax.plot([x, x], [0, y], **edge_args, zorder=0, linewidth=1)
-        ax.scatter(x, y, zorder=4,
-                   facecolor=node_args.get("color"),
-                   edgecolors=line_color, linewidth=1.5)
+        ax.plot([x, x], [0, y], zorder=0, linewidth=1, **edge_args)
+
 
         if (plot_links):
-            
             if old_x is not None and old_y is not None:
                 #Hull it
-                ax.plot((old_x, x), (old_y, y), color="#696969", linewidth=0.5, zorder=-1)
-                ax.fill_between((old_x, x), (old_y, y), zorder=-2, color="#F5F5F5")
-
+                ax.plot((old_x, x), (old_y, y), color="#696969", linewidth=0.5,
+                        zorder=-1)
+                ax.fill_between((old_x, x), (old_y, y),
+                                zorder=-2,
+                                color="#F5F5F5", **fill_args)
         old_x = x
         old_y = y
+    ax.scatter(xs, ys, zorder=4,
+               facecolor=fill_args.get("color", "white"),
+               edgecolors=line_color,
+               linewidth=1.5,
+               **node_args)
+
+
+from matplotlib.patches import Patch
+from matplotlib.text import Text
+from matplotlib.legend import Legend
+
+def _add_patch_to_current_legend(patch: Patch, label):
+    ax = plt.gca()
+    legend = [c for c in ax.get_children() if isinstance(c, Legend)][0]
+
+    handles = legend.legend_handles
+    labels = legend.texts
+
+    handles.append(patch)
+    labels.append(Text(0, 0, label))
+
+    plt.legend(handles)
+
+
+def patch(facecolor, label, alpha=1, width=1, height=0.8)-> None:
+    new_patch = Patch(facecolor=facecolor,
+                      edgecolor=facecolor,
+                      label=label,
+                      alpha=alpha)
+
+    if plt.gca().get_legend() is None:
+        plt.gca().legend(handles=[new_patch], handlelength=width, handleheight=height, loc="lower left")
+    else:
+        _add_patch_to_current_legend(Patch(facecolor=facecolor,
+              edgecolor=facecolor,
+              label=label,
+              alpha=alpha),
+              label=label)
