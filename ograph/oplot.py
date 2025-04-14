@@ -6,6 +6,8 @@ import matplotlib as mpl
 
 from . import ofig as of
 
+from matplotlib.typing import ColorType
+
 import logging
 from typing import TypeAlias, Any, Self
 import math
@@ -32,6 +34,11 @@ from matplotlib.legend import Legend
 Array2D: TypeAlias = Annotated[ndarray, (2, 2)]
 Array3D: TypeAlias = Annotated[ndarray, (2, 2, 2)]
 
+Seq2D: TypeAlias = Annotated[Sequence[float], 2]
+Seq3D: TypeAlias = Annotated[Sequence[float], 3]
+
+Vec2D = Array2D | Seq2D
+Vec3D = Array3D | Seq3D
 
 FILL_CONFIG: dict[str, str | float] = {"alpha": 0.5}
 EDGE_CONFIG = {"color": "black", "alpha": 1}
@@ -356,19 +363,14 @@ def _chull_2d(points: ndarray) -> None:
             **FILL_CONFIG)
 
 
-Vec2D = Annotated[Sequence[float], 2]
-
-Vec3D = Annotated[Sequence[float], 3]
-
-
 class BigArrow(FancyArrowPatch):
     """An 2- or 3-dimensional arrow.
 
     :meta private:
     """
     def __init__(self,
-                 start: Vec2D | Vec3D,
-                 end: Vec2D | Vec3D,
+                 start: Seq2D | Seq3D,
+                 end: Seq2D | Seq3D,
                  *args: Any,
                  **kwargs: Any):
         default_styles = {
@@ -406,8 +408,8 @@ class BigArrow(FancyArrowPatch):
             return np.min(tzs)
 
 
-def arrow(start: Vec2D | Vec3D,
-          end: Vec2D | Vec3D,
+def arrow(start: Seq2D | Seq3D,
+          end: Seq2D | Seq3D,
           *args: Any,
           **kwargs: Any) -> None:
     '''Plot an arrow to the current Axes or Axes3D.
@@ -427,8 +429,8 @@ def arrow(start: Vec2D | Vec3D,
     ax.add_artist(arrow)
 
 
-def plot(fun: Callable[[Array2D], Array2D],
-         x_range: Vec2D,
+def plot(fun: Callable[[float], float],
+         x_range: Seq2D,
          density: int = 1000,
          *args: ArrayLike,
          **kwargs: Any) -> None:
@@ -442,14 +444,15 @@ def plot(fun: Callable[[Array2D], Array2D],
     ax = plt.gca()
     x_max: float = max(x_range)
     x_min: float = min(x_range)
-    xs = np.arange(x_min, x_max, (x_max - x_min) / density)
-    ys = tuple(fun(x) for x in xs)
+    xs, ys = _make_ys(fun=fun,
+                      x_range=(x_min, x_max),
+                      density=density)
     ax.plot(xs, ys, *args, **kwargs)
 
 
-def _make_zs(fun: Callable[[Array2D, Array2D], Array2D],
-             x_range: Vec2D,
-             y_range: Vec2D,
+def _make_zs(fun: Callable[[float, float], float],
+             x_range: Seq2D,
+             y_range: Seq2D,
              density: int = 100,) -> tuple[ndarray, ndarray, ndarray]:
 
     x_max: float = max(x_range)
@@ -460,15 +463,17 @@ def _make_zs(fun: Callable[[Array2D, Array2D], Array2D],
     xs = np.arange(x_min, x_max, step=(x_max - x_min) / density)
     ys = np.arange(y_min, y_max, step=(y_max - y_min) / density)
 
-    xs, ys = np.meshgrid(xs, ys)
-    zs = fun(xs, ys)
+    zs = np.empty(shape=(len(ys), len(xs)))
+    for i, x in enumerate(xs):
+        for j, y in enumerate(ys):
+            zs[j][i] = fun(x, y)
 
     return (xs, ys, zs)
 
 
-def contour(fun: Callable[[Array2D, Array2D], Array2D],
-            x_range: Vec2D,
-            y_range: Vec2D,
+def contour(fun: Callable[[float, float], float],
+            x_range: Seq2D,
+            y_range: Seq2D,
             density: int = 100,
             levels: int = 50,
             cmap: str = CONTOUR_CMAP,
@@ -499,13 +504,14 @@ def contour(fun: Callable[[Array2D, Array2D], Array2D],
 
 
 def wireframe(fun:  # type: ignore[no-any-unimported]
-              Callable[[Array2D, Array2D], Array2D],
-              x_range: Vec2D,
-              y_range: Vec2D,
+              # Reason: I'm not sure which import is causing this.
+              Callable[[float, float], float],
+              x_range: Seq2D,
+              y_range: Seq2D,
               density: int = 100,
               cmap: str = CONTOUR_CMAP,
               alpha: float = 0.9,
-              **kwargs) -> Line3DCollection:
+              **kwargs: dict[str, Any]) -> Line3DCollection:
     '''Plot a wireframe map to the current Axes or Axes3D.
 
     Args:
@@ -527,9 +533,9 @@ def wireframe(fun:  # type: ignore[no-any-unimported]
                              **kwargs)
 
 
-def surface(fun: Callable[[Array2D, Array2D], Array2D],  # type: ignore[no-any-unimported] # noqa: E501
-            x_range: Vec2D,
-            y_range: Vec2D,
+def surface(fun: Callable[[float, float], float],  # type: ignore[no-any-unimported] # noqa: E501
+            x_range: Seq2D,
+            y_range: Seq2D,
             density: int = 100,
             cmap: str = CONTOUR_CMAP,
             colorbar: bool = True,
@@ -550,16 +556,18 @@ def surface(fun: Callable[[Array2D, Array2D], Array2D],  # type: ignore[no-any-u
     return cs
 
 
-def _make_plot_points(fun: Callable[[Array2D], Array2D],
-                      x_range: Vec2D,
-                      density: int = 20) -> Array2D:
+def _make_ys(fun: Callable[[float], float],
+             x_range: Seq2D,
+             density: int = 20) -> tuple[Array2D, Array2D]:
     x_max: float = max(x_range)
     x_min: float = min(x_range)
-    return np.linspace(x_min, x_max, num=density, dtype=np.float64)
+    xs = np.linspace(x_min, x_max, num=density, dtype=np.float64)
+    ys = np.array([fun(x) for x in xs])
+    return xs, ys
 
 
-def splatter(fun: Callable[[Array2D], Array2D],
-             x_range: Vec2D,
+def splatter(fun: Callable[[float], float],
+             x_range: Seq2D,
              density: int = 30,
              plot_links: bool = False,
              *,
@@ -567,14 +575,14 @@ def splatter(fun: Callable[[Array2D], Array2D],
              node_args: dict[str, Any] = {},
              fill_args: dict[str, Any] = {}) -> None:
 
-    xs = _make_plot_points(fun, x_range, density)
+    xs, ys = _make_ys(fun, x_range, density)
 
     shatter(xs=xs,
-            ys=tuple(fun(x) for x in xs),
+            ys=ys,
             plot_links=plot_links)
 
 
-def shatter(xs, ys,
+def shatter(xs: Vec2D, ys: Vec2D,
             plot_links: bool = False,
             *,
             edge_config: dict[str, Any] = {},
@@ -590,10 +598,13 @@ def shatter(xs, ys,
 
     # Incorporate alpha into edge color. Because `->scatter(.)` does not allow
     #   alpha to be specified for `edgecolors`, this is necessary.
-    line_color = mpl.colors.colorConverter.to_rgba(
-        edge_args.get("color"),  # type: ignore[arg-type]
-        edge_args.get("alpha")  # type: ignore[arg-type]
-    )
+    edge_color: Optional[ColorType] = edge_args.get("color")
+    edge_alpha: Optional[float] = edge_args.get("alpha")
+    if edge_color is not None and edge_alpha is not None:
+        line_color = mpl.colors.colorConverter.to_rgba(
+            edge_color,
+            edge_alpha
+        )
 
     old_x = old_y = None
 
@@ -626,7 +637,7 @@ def shatter(xs, ys,
                **node_args)
 
 
-def _add_patch_to_current_legend(patch: Patch, label):
+def _add_patch_to_current_legend(patch: Patch, label: str) -> None:
     ax = plt.gca()
     legend = [c for c in ax.get_children() if isinstance(c, Legend)][0]
 
@@ -639,7 +650,11 @@ def _add_patch_to_current_legend(patch: Patch, label):
     plt.legend(handles)
 
 
-def patch(facecolor, label, alpha=1, width=1, height=0.8) -> None:
+def patch(facecolor: ColorType,
+          label: str,
+          alpha: float = 1,
+          width: float = 1,
+          height: float = 0.8) -> None:
     new_patch = Patch(facecolor=facecolor,
                       edgecolor=facecolor,
                       label=label,
