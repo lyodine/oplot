@@ -25,6 +25,10 @@ from mpl_toolkits.mplot3d.proj3d import proj_transform  # type: ignore[import-un
 
 from numpy import ndarray
 
+from matplotlib.patches import Patch
+from matplotlib.text import Text
+from matplotlib.legend import Legend
+
 Array2D: TypeAlias = Annotated[ndarray, (2, 2)]
 Array3D: TypeAlias = Annotated[ndarray, (2, 2, 2)]
 
@@ -266,7 +270,8 @@ def heatmap(data: ndarray,
 
     my_fig = ax.get_figure()
     if (my_fig is not None):
-        my_fig.tight_layout()
+        my_fig.tight_layout()  # type: ignore[union-attr]
+        # (When called on an `Axes`, ->get_figure(.) always returns a `Figure`)
 
 
 def chull(shape:
@@ -460,6 +465,7 @@ def _make_zs(fun: Callable[[Array2D, Array2D], Array2D],
 
     return (xs, ys, zs)
 
+
 def contour(fun: Callable[[Array2D, Array2D], Array2D],
             x_range: Vec2D,
             y_range: Vec2D,
@@ -575,14 +581,15 @@ def shatter(xs, ys,
             node_config: dict[str, Any] = {},
             fill_config: dict[str, Any] = {}) -> None:
 
-    edge_args = EDGE_CONFIG | edge_config
-    node_args = node_config
-    fill_args = FILL_CONFIG | fill_config
+    edge_args: dict[str, Any] = EDGE_CONFIG | edge_config
+    # The default node style now borrows from edge style.
+    node_args: dict[str, Any] = node_config
+    fill_args: dict[str, Any] = FILL_CONFIG | fill_config
 
     ax = plt.gca()
 
-    # Override edge alpha
-
+    # Incorporate alpha into edge color. Because `->scatter(.)` does not allow
+    #   alpha to be specified for `edgecolors`, this is necessary.
     line_color = mpl.colors.colorConverter.to_rgba(
         edge_args.get("color"),  # type: ignore[arg-type]
         edge_args.get("alpha")  # type: ignore[arg-type]
@@ -597,8 +604,10 @@ def shatter(xs, ys,
                 zorder=-1)
 
     for (x, y) in zip(xs, ys):
-        ax.plot([x, x], [0, y], zorder=0, linewidth=1, **edge_args)
-
+        ax.plot([x, x], [0, y],
+                zorder=0,
+                linewidth=1,
+                **edge_args)
 
         if (plot_links):
             if old_x is not None and old_y is not None:
@@ -617,10 +626,6 @@ def shatter(xs, ys,
                **node_args)
 
 
-from matplotlib.patches import Patch
-from matplotlib.text import Text
-from matplotlib.legend import Legend
-
 def _add_patch_to_current_legend(patch: Patch, label):
     ax = plt.gca()
     legend = [c for c in ax.get_children() if isinstance(c, Legend)][0]
@@ -634,17 +639,20 @@ def _add_patch_to_current_legend(patch: Patch, label):
     plt.legend(handles)
 
 
-def patch(facecolor, label, alpha=1, width=1, height=0.8)-> None:
+def patch(facecolor, label, alpha=1, width=1, height=0.8) -> None:
     new_patch = Patch(facecolor=facecolor,
                       edgecolor=facecolor,
                       label=label,
                       alpha=alpha)
 
     if plt.gca().get_legend() is None:
-        plt.gca().legend(handles=[new_patch], handlelength=width, handleheight=height, loc="lower left")
+        plt.gca().legend(handles=[new_patch],
+                         handlelength=width,
+                         handleheight=height,
+                         loc="lower left")
     else:
         _add_patch_to_current_legend(Patch(facecolor=facecolor,
-              edgecolor=facecolor,
-              label=label,
-              alpha=alpha),
-              label=label)
+                                           edgecolor=facecolor,
+                                           label=label,
+                                           alpha=alpha),
+                                     label=label)
