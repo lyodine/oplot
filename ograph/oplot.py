@@ -460,7 +460,6 @@ def _make_zs(fun: Callable[[Array2D, Array2D], Array2D],
 
     return (xs, ys, zs)
 
-
 def contour(fun: Callable[[Array2D, Array2D], Array2D],
             x_range: Vec2D,
             y_range: Vec2D,
@@ -550,7 +549,7 @@ def _make_plot_points(fun: Callable[[Array2D], Array2D],
                       density: int = 20) -> Array2D:
     x_max: float = max(x_range)
     x_min: float = min(x_range)
-    return np.arange(x_min, x_max, (x_max - x_min) / density, dtype=np.float64) #complex128
+    return np.linspace(x_min, x_max, num=density, dtype=np.float64)
 
 
 def splatter(fun: Callable[[Array2D], Array2D],
