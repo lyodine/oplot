@@ -463,10 +463,14 @@ def _make_zs(fun: Callable[[float, float], float],
     xs = np.arange(x_min, x_max, step=(x_max - x_min) / density)
     ys = np.arange(y_min, y_max, step=(y_max - y_min) / density)
 
-    zs = np.empty(shape=(len(ys), len(xs)))
-    for i, x in enumerate(xs):
-        for j, y in enumerate(ys):
-            zs[j][i] = fun(x, y)
+    xs, ys = np.meshgrid(xs, ys)
+    zs = np.vectorize(fun)(xs, ys)
+
+    # This code is for functions that cannot be properly vectorised.
+    # zs = np.empty(shape=(len(ys), len(xs)))
+    # for i, x in enumerate(xs):
+    #     for j, y in enumerate(ys):
+    #         zs[j][i] = fun(x, y)
 
     return (xs, ys, zs)
 
