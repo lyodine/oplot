@@ -31,11 +31,11 @@ from matplotlib.patches import Patch
 from matplotlib.text import Text
 from matplotlib.legend import Legend
 
-Array2D: TypeAlias = Annotated[ndarray, (2, 2)]
-Array3D: TypeAlias = Annotated[ndarray, (2, 2, 2)]
+Array2D: TypeAlias = np.ndarray[tuple[Any, Any]]
+Array3D: TypeAlias = np.ndarray[tuple[Any, Any, Any]]
 
-Seq2D: TypeAlias = Annotated[Sequence[float], 2]
-Seq3D: TypeAlias = Annotated[Sequence[float], 3]
+Seq2D: TypeAlias = Sequence[Sequence[float]]
+Seq3D: TypeAlias = Sequence[Sequence[Sequence[float]]]
 
 Vec2D = Array2D | Seq2D
 Vec3D = Array3D | Seq3D
