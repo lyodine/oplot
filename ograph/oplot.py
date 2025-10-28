@@ -496,7 +496,6 @@ def contour(fun: Callable[[float, float], float],
     '''
     ax = plt.gca()
     xs, ys, zs = _make_zs(fun, x_range, y_range, density)
-    ax.set_aspect('equal')  # Very important, otherwise axes use different scales. # noqa: E501
     cs = ax.contour(xs, ys, zs, levels=levels, cmap=cmap,
                     norm=colors.Normalize(vmin=zs.min(),
                                           vmax=zs.max()),
@@ -528,7 +527,6 @@ def wireframe(fun:  # type: ignore[no-any-unimported]
     '''
     ax: Axes3D = plt.gca()  # type: ignore[no-any-unimported]
     xs, ys, zs = _make_zs(fun, x_range, y_range, density)
-    ax.set_aspect('equal')  # Very important, otherwise axes use different scales. # noqa: E501
     return ax.plot_wireframe(xs, ys, zs,
                              cmap=cmap,
                              norm=colors.Normalize(vmin=zs.min(),
@@ -543,10 +541,9 @@ def surface(fun: Callable[[float, float], float],  # type: ignore[no-any-unimpor
             density: int = 100,
             cmap: str = CONTOUR_CMAP,
             colorbar: bool = True,
-            alpha: float = 0.9) -> Line3DCollection:
+            alpha: float = 0.9,) -> Line3DCollection:
     ax: Axes3D = plt.gca()  # type: ignore[no-any-unimported]
     xs, ys, zs = _make_zs(fun, x_range, y_range, density)
-    ax.set_aspect('equal')  # Very important, otherwise axes use different scales. # noqa: E501
     cs = ax.plot_surface(xs, ys, zs,
                          cmap=cmap,
                          norm=colors.Normalize(vmin=zs.min(), vmax=zs.max()),
