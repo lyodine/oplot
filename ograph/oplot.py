@@ -31,12 +31,18 @@ from matplotlib.patches import Patch
 from matplotlib.text import Text
 from matplotlib.legend import Legend
 
-Array2D: TypeAlias = np.ndarray[tuple[Any, Any]]
-Array3D: TypeAlias = np.ndarray[tuple[Any, Any, Any]]
+Array1D: TypeAlias = np.ndarray[tuple[Any, Any],
+                                np.dtype[np.float64]]
+Array2D: TypeAlias = np.ndarray[tuple[Any, Any],
+                                np.dtype[np.float64]]
+Array3D: TypeAlias = np.ndarray[tuple[Any, Any, Any],
+                                np.dtype[np.float64]]
 
+Seq1D: TypeAlias = Sequence[float]
 Seq2D: TypeAlias = Sequence[Sequence[float]]
 Seq3D: TypeAlias = Sequence[Sequence[Sequence[float]]]
 
+Vec1D = Array1D | Seq1D
 Vec2D = Array2D | Seq2D
 Vec3D = Array3D | Seq3D
 
