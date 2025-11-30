@@ -31,7 +31,7 @@ from matplotlib.patches import Patch
 from matplotlib.text import Text
 from matplotlib.legend import Legend
 
-Array1D: TypeAlias = np.ndarray[tuple[Any, Any],
+Array1D: TypeAlias = np.ndarray[tuple[Any],
                                 np.dtype[np.float64]]
 Array2D: TypeAlias = np.ndarray[tuple[Any, Any],
                                 np.dtype[np.float64]]
