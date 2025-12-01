@@ -300,16 +300,17 @@ def chull(shape:
         Plot at the current active axis.
     """
     # The checker only checks if the first element has the correct dimension.
+    # This is bad, but performant.
     match len(shape[0]):
         case 2:
-            _chull_2d(shape)
+            _chull_2d(np.ndarray(shape))  # type: ignore[arg-type]
         case 3:
-            _chull_3d(shape)
+            _chull_3d(np.ndarray(shape))  # type: ignore
         case _:
             raise ValueError("Input must be either 2 or 3")
 
 
-def _chull_3d(shape: Vec3D) -> None:
+def _chull_3d(shape: Array3D) -> None:
     ax: Axes3D = plt.gca()  # type: ignore[no-any-unimported]
     ensure_axes_dimension(ax, 3)
 
@@ -353,7 +354,7 @@ def _chull_3d(shape: Vec3D) -> None:
                **NODE_CONFIG)
 
 
-def _chull_2d(points: Vec2D) -> None:
+def _chull_2d(points: Array2D) -> None:
     ax = plt.gca()
     ensure_axes_dimension(ax, 2)
     hull = ConvexHull(points)
@@ -375,8 +376,8 @@ class BigArrow(FancyArrowPatch):
     :meta private:
     """
     def __init__(self,
-                 start: Vec2D | Vec3D,
-                 end: Vec2D | Vec3D,
+                 start: Vec1D,
+                 end: Vec1D,
                  *args: Any,
                  **kwargs: Any):
         default_styles = {
@@ -384,7 +385,8 @@ class BigArrow(FancyArrowPatch):
             "arrowstyle": "-|>",
             "linestyle": "--"
         }
-        super().__init__((start[0], start[1]),
+        # start[i] for example can be either a number or a vector.
+        super().__init__((start[0], start[1]),  # type: ignore[arg-type]
                          (end[0], end[1]),
                          *args,
                          **(kwargs | default_styles))
@@ -414,8 +416,8 @@ class BigArrow(FancyArrowPatch):
             return np.min(tzs)
 
 
-def arrow(start: Vec2D | Vec3D,
-          end: Vec2D | Vec3D,
+def arrow(start: Vec1D,
+          end: Vec1D,
           *args: Any,
           **kwargs: Any) -> None:
     '''Plot an arrow to the current Axes or Axes3D.
@@ -565,7 +567,7 @@ def surface(fun: Callable[[float, float], float],  # type: ignore[no-any-unimpor
 
 def _make_ys(fun: Callable[[float], float],
              x_range: tuple[float, float],
-             density: int = 20) -> tuple[Array2D, Array2D]:
+             density: int = 20) -> tuple[Vec1D, Vec1D]:
     x_max: float = max(x_range)
     x_min: float = min(x_range)
     xs = np.linspace(x_min, x_max, num=density, dtype=np.float64)
