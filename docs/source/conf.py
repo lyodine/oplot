@@ -1,13 +1,14 @@
 import sys
 import os
+from importlib.metadata import metadata
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'ograph'
-copyright = '2024-2025, Yiding Li'
-author = 'Yiding Li'
+project = metadata('ograph')['Name']
+copyright = f"2024-2025, {metadata('ograph')['Author-email']}"
+description = f"{metadata('ograph')['Summary']}"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
