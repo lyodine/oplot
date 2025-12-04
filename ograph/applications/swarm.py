@@ -31,7 +31,7 @@ def plot_positions(data: Vec2D | Vec3D,
     """
     mort = np.array(data)
 
-    margin: float = 0.1 if override_margin is None\
+    margin: float = 1 if override_margin is None\
         else override_margin
 
     x_min: float
@@ -52,8 +52,8 @@ def plot_positions(data: Vec2D | Vec3D,
 
         mort =\
             np.apply_along_axis(func1d=lambda arr: [
-                arr[0] if x_min <= arr[0] <= x_max else np.nan,
-                arr[1] if y_min <= arr[1] <= y_max else np.nan],
+                arr[0] if x_min < arr[0] < x_max else np.nan,
+                arr[1] if y_min < arr[1] < y_max else np.nan],
                 axis=2 if len(mort.shape) == 3 else 1,
                 arr=mort)
 
@@ -77,6 +77,9 @@ def plot_positions(data: Vec2D | Vec3D,
         plt.scatter(_xs, _ys, s=9,
                     color=mpl.colormaps['RdYlGn'](_intensity),
                     alpha=0.5)  # type: ignore
+
+    plt.xlim((x_min + margin, x_max - margin))
+    plt.ylim((y_min + margin, y_max - margin))
 
 
 def plot_bests(data: Vec2D,
