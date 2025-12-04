@@ -303,9 +303,9 @@ def chull(shape:
     # This is bad, but performant.
     match len(shape[0]):
         case 2:
-            _chull_2d(np.ndarray(shape))  # type: ignore[arg-type]
+            _chull_2d(np.array(shape))  # type: ignore[arg-type]
         case 3:
-            _chull_3d(np.ndarray(shape))  # type: ignore
+            _chull_3d(np.array(shape))  # type: ignore
         case _:
             raise ValueError("Input must be either 2 or 3")
 
