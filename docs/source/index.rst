@@ -1,19 +1,20 @@
+|
+
+.. image:: media/logo.png
+  :width: 400
+  :align: center
+  :alt: Project logo
+
+|
+
+
 OGraph Documentation
 ====================
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
 .. toctree::
    :maxdepth: 2
    :caption: Getting Started:
 
-   why
    install-and-build
    guides/index
 
@@ -22,3 +23,10 @@ Indices and tables
    :caption: API Reference:
 
    modules
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
