@@ -1,7 +1,6 @@
 """Utilities that plot to the current Axes.
 """
 import matplotlib.pyplot as plt
-import matplotlib.pylab as pylab
 import matplotlib.colors as colors
 import numpy as np
 import matplotlib as mpl
@@ -18,7 +17,6 @@ from typing import Optional, Sequence, Callable
 
 from scipy.spatial import ConvexHull, distance  # type: ignore[import-untyped]
 
-from matplotlib.axes import Axes
 from matplotlib.patches import FancyArrowPatch
 
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection  # type: ignore[import-untyped] # noqa: E501
@@ -51,61 +49,6 @@ FILL_CONFIG: dict[str, str | float] = {"alpha": 0.5}
 EDGE_CONFIG = {"color": "black", "alpha": 1}
 NODE_CONFIG = {"color": "black", "alpha": 0.5}
 CONTOUR_CMAP = "viridis"
-
-
-def annotate(title: str,
-             xlabel: str,
-             ylabel: str,
-             zlabel: Optional[str] = None) -> None:
-    """Annotate the current figure.
-
-    Set :arg:`title`, :arg:`xlabel`, and :arg:`ylabel` of the current axes.
-    Also set runtime configurations that style annotations.
-
-    To reset the parameters, call:
-    :python:`matplotlib.rcParams.update(matplotlib.rcParamsDefault)`
-
-    Args:
-        title: Title of the figure
-        xlabel: Labels for the x axis
-        ylabel: Labels for the y axis
-        zlabel: Labels for the z axis
-
-    Effect:
-        Plot to the current active figure.
-        Change runtime configurations.
-    """
-
-    axes_label_size: str = "x-large"
-    plot_title_size: str = "x-large"
-
-    font = {'legend.fontsize': 'x-large',
-            'axes.titlesize': plot_title_size,
-            'axes.labelsize': axes_label_size,
-            'xtick.labelsize': axes_label_size,
-            'ytick.labelsize': axes_label_size,
-            'text.usetex': False,
-            'font.family': 'Open Sans',
-            'axes.titlepad': 15, }
-
-    ax: Axes | Axes3D = plt.gca()  # type: ignore[no-any-unimported]
-
-    pylab.rcParams.update(font)
-    ax.set_xlabel(xlabel, fontname='PT Serif')
-    ax.set_ylabel(ylabel, fontname='PT Serif')
-    if (zlabel is not None):
-        ensure_axes_dimension(ax, 3)
-        if (isinstance(ax, Axes3D)):
-            ax.set_zlabel(zlabel, fontname='PT Serif')
-        else:
-            raise Exception("This should not happen.")
-
-    my_fig = ax.get_figure()
-
-    if (my_fig is not None):
-        my_fig.suptitle(title, fontname='PT Serif')
-    else:
-        raise Exception("Somehow the Axes is not attached to a Figure. How?")
 
 
 def heatmap(data: Vec2D,
