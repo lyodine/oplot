@@ -5,3 +5,4 @@ temp.*
 *.egg-info
 build
 .mypy_cache/
+dist/
