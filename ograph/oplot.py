@@ -325,7 +325,8 @@ def plot(fun: Callable[[float], float],
     Args:
         fun: The function to plot.
         x_range: A tuple of the beginning and end of the x axis.
-        density: the number of points sampled over each axis.
+        density: Number of data point to plot. These points are
+            evenly spaced over (:arg:`x_range` * :arg:`y_range`).
     '''
     ax = plt.gca()
     x_max: float = max(x_range)
@@ -375,7 +376,8 @@ def contour(fun: Callable[[float, float], float],
         fun: The function to plot.
         x_range: A tuple of the beginning and end of the x axis.
         y_range: A tuple of the beginning and end of the y axis.
-        density: the number of points sampled over each axis.
+        density: Number of point to plot. These points are
+            evenly spaced over (:arg:`x_range` * :arg:`y_range`).
         levels: The number of contour lines.
         cmap: The colour map used by the contour map.
         colorbar: If True, draw the colour bar.
@@ -407,7 +409,8 @@ def wireframe(fun:  # type: ignore[no-any-unimported]
         fun: The function to plot.
         x_range: A tuple of the beginning and end of the x axis.
         y_range: A tuple of the beginning and end of the y axis.
-        density: the number of points sampled over each axis.
+        density: Number of point to plot. These points are
+            evenly spaced over :arg:`x_range`.
         cmap: The colour map used by the contour map.
         alpha: Alpha value (transparency) of the frame.
     '''
@@ -453,20 +456,31 @@ def _make_ys(fun: Callable[[float], float],
     return xs, ys
 
 
-def splatter(fun: Callable[[float], float],
-             x_range: tuple[float, float],
-             density: int = 30,
-             plot_links: bool = False,
-             *,
-             edge_args: dict[str, Any] = {},
-             node_args: dict[str, Any] = {},
-             fill_args: dict[str, Any] = {}) -> None:
+def stems(fun: Callable[[float], float],
+          x_range: tuple[float, float],
+          density: int = 30,
+          plot_links: bool = False,
+          *,
+          edge_args: dict[str, Any] = {},
+          node_args: dict[str, Any] = {},
+          fill_args: dict[str, Any] = {}) -> None:
+    """PLot a stem plot to the current Axes.
+
+    Args:
+        x_range: A tuple of the beginning and end of the x axis.
+        density: Number of point to plot. These points are
+            evenly spaced over :arg:`x_range`.
+        plot_links: If ``True``, then plot links.
+    """
 
     xs, ys = _make_ys(fun, x_range, density)
 
     stem(xs=xs,
          ys=ys,
-         plot_links=plot_links)
+         plot_links=plot_links,
+         edge_args=edge_args,
+         node_args=node_args,
+         fill_args=fill_args)
 
 
 def stem(xs: Vec1D, ys: Vec1D,
@@ -475,6 +489,9 @@ def stem(xs: Vec1D, ys: Vec1D,
          edge_args: dict[str, Any] = {},
          node_args: dict[str, Any] = {},
          fill_args: dict[str, Any] = {}) -> None:
+    """Plot a stem plot to the current Axes.
+    Similar to :meth:`Axes.stem`, but offers more control over style.
+    """
 
     edge_args: dict[str, Any] = EDGE_CONFIG | edge_args
     # The default node style now borrows from edge style.
@@ -547,6 +564,15 @@ def patch(facecolor: ColorType,
           alpha: float = 1,
           width: float = 1,
           height: float = 0.8) -> None:
+    """Add and label a rectangular colour patch to the current
+    plot.
+
+    Args:
+        label: Label to the patch.
+        alpha: Alpha value of the patch.
+        width: Width of the patch.
+        height: Height of the patch.
+    """
     new_patch = Patch(facecolor=facecolor,
                       edgecolor=facecolor,
                       label=label,
