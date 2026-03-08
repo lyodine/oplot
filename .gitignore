@@ -4,3 +4,4 @@ temp.*
 .temp.*
 *.egg-info
 build
+.mypy_cache/
