@@ -10,7 +10,7 @@ from .ofig import ensure_axes_dimension
 
 from matplotlib.typing import ColorType
 
-from typing import TypeAlias, Any, Self
+from typing import Any, Self
 import math
 from numpy.typing import ArrayLike
 
@@ -31,16 +31,16 @@ from matplotlib.patches import Patch
 from matplotlib.text import Text
 from matplotlib.legend import Legend
 
-Array1D: TypeAlias = np.ndarray[tuple[Any],
-                                np.dtype[np.float64]]
-Array2D: TypeAlias = np.ndarray[tuple[Any, Any],
-                                np.dtype[np.float64]]
-Array3D: TypeAlias = np.ndarray[tuple[Any, Any, Any],
-                                np.dtype[np.float64]]
+type Array1D = np.ndarray[tuple[Any],
+                          np.dtype[np.float64]]
+type Array2D = np.ndarray[tuple[Any, Any],
+                          np.dtype[np.float64]]
+type Array3D = np.ndarray[tuple[Any, Any, Any],
+                          np.dtype[np.float64]]
 
-Sequence1D: TypeAlias = Sequence[float]
-Sequence2D: TypeAlias = Sequence[Sequence[float]]
-Sequence3D: TypeAlias = Sequence[Sequence[Sequence[float]]]
+type Sequence1D = Sequence[float]
+type Sequence2D = Sequence[Sequence[float]]
+type Sequence3D = Sequence[Sequence[Sequence[float]]]
 
 type Vec1D = Array1D | Sequence1D
 type Vec2D = Array2D | Sequence2D
@@ -52,10 +52,10 @@ type Point3D = Vec1D
 type Points2D = Vec2D
 type Points3D = Vec2D
 
-FILL_CONFIG: dict[str, str | float] = {"alpha": 0.5}
-EDGE_CONFIG = {"color": "black", "alpha": 1}
-NODE_CONFIG = {"color": "black", "alpha": 0.5}
-CONTOUR_CMAP = "viridis"
+FILL_CONFIG: dict[str, Any] = {"alpha": 0.5}
+EDGE_CONFIG: dict[str, Any] = {"color": "black", "alpha": 1}
+NODE_CONFIG: dict[str, Any] = {"color": "black", "alpha": 0.5}
+CONTOUR_CMAP: str = "viridis"
 
 
 def heatmap(data: Vec2D,
@@ -137,7 +137,7 @@ def chull(shape: Points2D | Points3D) -> None:
             raise ValueError("Input must be either 2 or 3")
 
 
-def _chull_3d(shape: Points3D) -> None:
+def _chull_3d(shape: Array2D) -> None:
     ax: Axes3D = plt.gca()  # type: ignore[no-any-unimported]
     ensure_axes_dimension(ax, 3)
 
@@ -181,7 +181,7 @@ def _chull_3d(shape: Points3D) -> None:
                **NODE_CONFIG)
 
 
-def _chull_2d(points: Points2D) -> None:
+def _chull_2d(points: Array2D) -> None:
     ax = plt.gca()
     ensure_axes_dimension(ax, 2)
     hull = ConvexHull(points)
@@ -250,8 +250,12 @@ def arrow(start: Point2D, end: Point2D,
     pass
 
 
+# Suppress the error. This overload will never be matched
+#   since :class:`Point3D` and :class:`Point2D` alias
+#   the same thing. The overload is there for the user's knowledge.
 @overload
-def arrow(start: Point3D, end: Point3D,
+def arrow(start: Point3D,  # type: ignore[overload-cannot-match]
+          end: Point3D,
           *args: Any,
           **kwargs: Any) -> None:
     pass
@@ -456,17 +460,22 @@ def stem(xs: Vec1D, ys: Vec1D,
     Similar to :meth:`Axes.stem`, but offers more control over style.
     """
 
-    edge_args: dict[str, Any] = EDGE_CONFIG | edge_args
+    edge_args = EDGE_CONFIG | edge_args
     # The default node style now borrows from edge style.
-    node_args: dict[str, Any] = node_args
-    fill_args: dict[str, Any] = FILL_CONFIG | fill_args
+    node_args = node_args
+    fill_args = FILL_CONFIG | fill_args
 
     ax = plt.gca()
 
     # Incorporate alpha into edge color. Because `->scatter(.)` does not allow
     #   alpha to be specified for `edgecolors`, this is necessary.
-    edge_color: Optional[ColorType] = edge_args.get("color")
-    edge_alpha: Optional[float] = edge_args.get("alpha")
+
+    # Suppressing this error because `.get` is maltyped to return
+    #   (Any | None). This is not very helpful.
+    edge_color: Optional[ColorType]\
+        = edge_args.get("color")  # type: ignore[assignment]
+    edge_alpha: Optional[float]\
+        = edge_args.get("alpha")  # type: ignore[assignment]
     if edge_color is not None and edge_alpha is not None:
         line_color = mpl.colors.colorConverter.to_rgba(
             edge_color,

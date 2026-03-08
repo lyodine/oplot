@@ -7,8 +7,7 @@ from typing import Optional
 import matplotlib.pyplot as plt
 import matplotlib as mlp
 import matplotlib.pylab as pylab
-from mpl_toolkits.mplot3d.axes3d\
-    import Axes3D  # type: ignore[import-untyped]
+from mpl_toolkits.mplot3d.axes3d import Axes3D  # type: ignore[import-untyped]
 
 from .ofig import ensure_axes_dimension
 
