@@ -1,6 +1,6 @@
 |
 
-.. image:: media/logo.png
+.. image:: media/alternative_logo.png
   :width: 400
   :align: center
   :alt: Project logo

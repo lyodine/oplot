@@ -16,11 +16,13 @@ def plot_positions(data: Vec2D | Vec3D,
 
     Args:
         data: Either a 2-D tensor or a 3-D tensor.
+
             * If :arg:`data` is 2-D: data[t] is a single point. Plot
-                its change over time.
+              its change over time.
+
             * If :arg:`data` is 3-D: data[t] is a collection oof
-                points. Plot the change of these points over
-                time.
+              points. Plot the change of these points over
+              time.
 
         objective: An objective function to be plotted as background.
 
