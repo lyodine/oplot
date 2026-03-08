@@ -1,3 +1,7 @@
+"""Utilities that configure the current plot
+or all plots in the current session.
+"""
+
 from typing import Optional
 
 import matplotlib.pyplot as plt

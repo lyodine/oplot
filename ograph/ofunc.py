@@ -1,3 +1,6 @@
+"""Test functions and matrices. Examples are
+the Himmelblau function and the unit cube.
+"""
 from numpy import array
 
 

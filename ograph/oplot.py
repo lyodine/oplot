@@ -1,3 +1,5 @@
+"""Utilities that plot to the current Axes.
+"""
 import matplotlib.pyplot as plt
 import matplotlib.pylab as pylab
 import matplotlib.colors as colors

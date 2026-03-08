@@ -1,5 +1,5 @@
-"""
-    Custom plotting library.
+"""Utilities that create and check figures
+of different dimensions.
 """
 
 import matplotlib.pyplot as plt
