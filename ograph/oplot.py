@@ -464,22 +464,22 @@ def splatter(fun: Callable[[float], float],
 
     xs, ys = _make_ys(fun, x_range, density)
 
-    shatter(xs=xs,
-            ys=ys,
-            plot_links=plot_links)
+    stem(xs=xs,
+         ys=ys,
+         plot_links=plot_links)
 
 
-def shatter(xs: Vec1D, ys: Vec1D,
-            plot_links: bool = False,
-            *,
-            edge_config: dict[str, Any] = {},
-            node_config: dict[str, Any] = {},
-            fill_config: dict[str, Any] = {}) -> None:
+def stem(xs: Vec1D, ys: Vec1D,
+         plot_links: bool = False,
+         *,
+         edge_args: dict[str, Any] = {},
+         node_args: dict[str, Any] = {},
+         fill_args: dict[str, Any] = {}) -> None:
 
-    edge_args: dict[str, Any] = EDGE_CONFIG | edge_config
+    edge_args: dict[str, Any] = EDGE_CONFIG | edge_args
     # The default node style now borrows from edge style.
-    node_args: dict[str, Any] = node_config
-    fill_args: dict[str, Any] = FILL_CONFIG | fill_config
+    node_args: dict[str, Any] = node_args
+    fill_args: dict[str, Any] = FILL_CONFIG | fill_args
 
     ax = plt.gca()
 
@@ -517,11 +517,16 @@ def shatter(xs: Vec1D, ys: Vec1D,
                                 color="#F5F5F5", **fill_args)
         old_x = x
         old_y = y
+
     ax.scatter(xs, ys, zorder=4,
                facecolor=fill_args.get("color", "white"),
                edgecolors=line_color,
                linewidth=1.5,
                **node_args)
+
+
+#: Legacy alias for :meth:`stem`.
+shatter = stem
 
 
 def _add_patch_to_current_legend(patch: Patch, label: str) -> None:
