@@ -1,3 +1,6 @@
+from numpy import array
+
+
 def rosenbrock(*args: float) -> float:
     """Rosenbrock function.
 
@@ -16,3 +19,27 @@ def himmelblau(x: float, y: float) -> float:
     2-dimensional test function with several minimum.
     """
     return (x ** 2 + y - 11) ** 2 + (x + y ** 2 - 7) ** 2
+
+
+#! Immutable 2-dimensional unit square.
+unit_square = array(
+    [[0, 0],
+     [0, 1],
+     [1, 0],
+     [1, 1]]
+)
+unit_square.flags.writeable = False
+
+
+#! Immutable 3-dimensional unit cube. Fancy!
+unit_cube = array(
+    [[0, 0, 0],
+     [1, 0, 0],
+     [0, 1, 0],
+     [0, 0, 1],
+     [1, 1, 0],
+     [0, 1, 1],
+     [1, 0, 1],
+     [1, 1, 1],]
+)
+unit_cube.flags.writeable = False

@@ -4,11 +4,10 @@ import matplotlib.colors as colors
 import numpy as np
 import matplotlib as mpl
 
-from . import ofig as of
+from .ofig import ensure_axes_dimension
 
 from matplotlib.typing import ColorType
 
-import logging
 from typing import TypeAlias, Any, Self
 import math
 from numpy.typing import ArrayLike
@@ -50,129 +49,6 @@ FILL_CONFIG: dict[str, str | float] = {"alpha": 0.5}
 EDGE_CONFIG = {"color": "black", "alpha": 1}
 NODE_CONFIG = {"color": "black", "alpha": 0.5}
 CONTOUR_CMAP = "viridis"
-
-
-class DimensionError(ValueError):
-    """Raised when the dimension of a figure does not agree
-    with the plot.
-
-    When this happens, something is going seriously wrong.
-    """
-    def __init__(self, expected: str, actual: str):
-        """
-        Args:
-            expected: Dimensions of the plot
-            actual: Dimensions of the figure
-        """
-        super().__init__(f"Dimension mismatch: expected {expected},"
-                         f" got {actual}")
-
-
-def ensure_axes_dimension(axes: Axes | Axes3D,  # type: ignore[no-any-unimported] # noqa: E501
-                          dim: int) -> None:
-    """Assert if the given axes is of the specified dimension.
-
-    Raises:
-        :class:`DimensionError`: if :arg:`dim` does not agree with the
-            dimension of :arg:`axes:.`
-    """
-    dimension_to_name = {2: "rectilinear", 3: "3d"}
-    if dim in dimension_to_name:
-        if (axes.name != dimension_to_name[dim]):
-            raise DimensionError(dimension_to_name[dim], axes.name)
-    else:
-        of.fig3() if dim == 3 else of.fig2()
-        logging.warning(f"The current projection is not `{dim}d`."
-                        f"A new {"Axes" if dim == 2 else "Axes3D"}"
-                        " is created instead.")
-
-
-#! Immutable 2-dimensional unit square.
-unit_square = np.array(
-    [[0, 0],
-     [0, 1],
-     [1, 0],
-     [1, 1]]
-)
-unit_square.flags.writeable = False
-
-
-#! Immutable 3-dimensional unit cube. Fancy!
-unit_cube = np.array(
-    [[0, 0, 0],
-     [1, 0, 0],
-     [0, 1, 0],
-     [0, 0, 1],
-     [1, 1, 0],
-     [0, 1, 1],
-     [1, 0, 1],
-     [1, 1, 1],]
-)
-unit_cube.flags.writeable = False
-
-
-def view_rotate(h_rotate: float, v_rotate: float) -> None:
-    """Rotate the current `Axes3D`.
-
-    @param h_rotate the degree to rotate vertically
-    @param v_rotate the degree to rotate horizontally
-    """
-    ax: Axes3D = plt.gca()  # type: ignore[no-any-unimported]
-    ensure_axes_dimension(ax, 3)
-    if (isinstance(ax, Axes3D)):  # Make mypy happy
-        ax.view_init(h_rotate, v_rotate)
-    else:
-        raise Exception("This should not happen."
-                        "The exception has been checked.")
-
-
-def view_axis_pos(pos: Optional[str]) -> None:
-    """Position labels and ticks of the current Axes3D.
-
-    Args:
-        pos: The position, one of :python:`'lower'`,
-            :python:`'upper'`,
-            :python:`'default'`,
-            :python:`'both'`,
-            :python:`'none'`,
-            and :python:`None`.
-    """
-    accepted_values: list[str] = ['lower', 'upper', 'default', 'both', 'none']
-    ax: Axes3D = plt.gca()  # type: ignore[no-any-unimported]
-    ensure_axes_dimension(ax, 3)
-    match pos:
-        case None:
-            ax.axis('off')
-        case other:
-            if other in accepted_values:
-                for axis in ax.xaxis, ax.yaxis, ax.zaxis:
-                    axis.set_label_position(other)
-                    axis.set_ticks_position(other)
-            else:
-                raise ValueError(f"The input {other} is not one of"
-                                 f"{str(accepted_values)}.")
-
-
-def high_res() -> None:
-    """Set figures to render in higher resolution.
-
-    Set runtime configuration ``figure.dpi`` to 200.
-
-    Effect:
-        Change runtime configurations.
-    """
-    pylab.rcParams.update({'figure.dpi': 200})
-
-
-def low_res() -> None:
-    """Set figures to render in the default resolution.
-
-    Set runtime configuration ``figure.dpi`` to 100, the default value.
-
-    Effect:
-        Change runtime configurations.
-    """
-    pylab.rcParams.update({'figure.dpi': 100})
 
 
 def annotate(title: str,

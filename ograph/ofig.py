@@ -9,6 +9,7 @@ from mpl_toolkits.mplot3d.axes3d import Axes3D  # type: ignore[import-untyped]
 from typing import Tuple
 from typing import Optional
 from typing import Any
+import logging
 
 
 def fig2(xlims: Optional[Tuple[float, float]] = None,
@@ -86,3 +87,38 @@ def fig3(xlims: Optional[Tuple[float, float]] = None,  # type: ignore[no-any-uni
     if (zlims is not None):
         ax.set_zlim(*zlims)
     return (fig, ax)
+
+
+class DimensionError(ValueError):
+    """Raised when the dimension of a figure does not agree
+    with the plot.
+
+    When this happens, something is going seriously wrong.
+    """
+    def __init__(self, expected: str, actual: str):
+        """
+        Args:
+            expected: Dimensions of the plot
+            actual: Dimensions of the figure
+        """
+        super().__init__(f"Dimension mismatch: expected {expected},"
+                         f" got {actual}")
+
+
+def ensure_axes_dimension(axes: Axes | Axes3D,  # type: ignore[no-any-unimported] # noqa: E501
+                          dim: int) -> None:
+    """Assert if the given axes is of the specified dimension.
+
+    Raises:
+        :class:`DimensionError`: if :arg:`dim` does not agree with the
+            dimension of :arg:`axes:.`
+    """
+    dimension_to_name = {2: "rectilinear", 3: "3d"}
+    if dim in dimension_to_name:
+        if (axes.name != dimension_to_name[dim]):
+            raise DimensionError(dimension_to_name[dim], axes.name)
+    else:
+        fig3() if dim == 3 else fig2()
+        logging.warning(f"The current projection is not `{dim}d`."
+                        f"A new {"Axes" if dim == 2 else "Axes3D"}"
+                        " is created instead.")
