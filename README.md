@@ -29,9 +29,28 @@ The library have the following modules:
 
 | Component                                          | Description                |
 | -------------------------------------------------- | -------------------------- |
-| [ofig](./ograph/ofig/)                             | Create 2-D and 3-D figures |
-| [oplot](./ograph/oplot/)                           | Plot 2-D and 3-D diagrams  |
-| [ofunc](./ograph/ofunc/)                           | Test functions             |
-| [oconfig](./ograph/oconfig/)                       | Configure decorations      |
-| [applications.swarm](./ograph/applications/swarm/) | Plot point clusters        |
+| [ofig](./ograph/ofig/) | Create and check the dimensions of plots |
+| [oplot](./ograph/oplot/) | Plot to the current axes  |
+| [oconfig](./ograph/oconfig/)                       | Configure plots            |
+| [ofunc](./ograph/ofunc/) | Supply test functions and matrices |
+| [applications.swarm](./ograph/applications/swarm/) | Plot point clusters |
 
+The ograph.oplot library contains the following plotters: 
+
+| Plotter   | Dimension of Plot | Data               |
+| --------- | ----------------- | ------------------ |
+| heatmap   | 2                 | $M\times N$ matrix |
+| chull     | 2, 3              | $R^2$ or $R^3$     |
+| arrow     | 2, 3              | $R^2$ or $R^3$     |
+| plot      | 2                 | $R\rightarrow R$   |
+| wireframe | 3                 | $R^2\rightarrow R$ |
+| surface   | 3                 | $R^2\rightarrow R$ |
+| stems     | 2                 | $R\rightarrow R$   |
+| stem      | 2                 | `xs`  and `ys      |
+| patch     | Any               | Colours and labels |
+
+The `application.swarm` module contains the following plotters:
+
+
+plot_positions 2 list[R^2] or list[list[R^2]]
+plot_bests 2 list[R^2]
