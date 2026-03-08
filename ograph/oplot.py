@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import numpy as np
 import matplotlib as mpl
+from typing import overload
 
 from .ofig import ensure_axes_dimension
 
@@ -37,13 +38,19 @@ Array2D: TypeAlias = np.ndarray[tuple[Any, Any],
 Array3D: TypeAlias = np.ndarray[tuple[Any, Any, Any],
                                 np.dtype[np.float64]]
 
-Seq1D: TypeAlias = Sequence[float]
-Seq2D: TypeAlias = Sequence[Sequence[float]]
-Seq3D: TypeAlias = Sequence[Sequence[Sequence[float]]]
+Sequence1D: TypeAlias = Sequence[float]
+Sequence2D: TypeAlias = Sequence[Sequence[float]]
+Sequence3D: TypeAlias = Sequence[Sequence[Sequence[float]]]
 
-Vec1D = Array1D | Seq1D
-Vec2D = Array2D | Seq2D
-Vec3D = Array3D | Seq3D
+type Vec1D = Array1D | Sequence1D
+type Vec2D = Array2D | Sequence2D
+type Vec3D = Array3D | Sequence3D
+
+type Point2D = Vec1D
+type Point3D = Vec1D
+
+type Points2D = Vec2D
+type Points3D = Vec2D
 
 FILL_CONFIG: dict[str, str | float] = {"alpha": 0.5}
 EDGE_CONFIG = {"color": "black", "alpha": 1}
@@ -108,8 +115,7 @@ def heatmap(data: Vec2D,
         # (When called on an `Axes`, ->get_figure(.) always returns a `Figure`)
 
 
-def chull(shape:
-          Vec2D | Vec3D) -> None:
+def chull(shape: Points2D | Points3D) -> None:
     """Plot a convex hull to the current active axes.
 
     Detect the shape of points by inspecting the first in the sequence.
@@ -131,7 +137,7 @@ def chull(shape:
             raise ValueError("Input must be either 2 or 3")
 
 
-def _chull_3d(shape: Array3D) -> None:
+def _chull_3d(shape: Points3D) -> None:
     ax: Axes3D = plt.gca()  # type: ignore[no-any-unimported]
     ensure_axes_dimension(ax, 3)
 
@@ -175,7 +181,7 @@ def _chull_3d(shape: Array3D) -> None:
                **NODE_CONFIG)
 
 
-def _chull_2d(points: Array2D) -> None:
+def _chull_2d(points: Points2D) -> None:
     ax = plt.gca()
     ensure_axes_dimension(ax, 2)
     hull = ConvexHull(points)
@@ -237,8 +243,22 @@ class BigArrow(FancyArrowPatch):
             return np.min(tzs)
 
 
-def arrow(start: Vec1D,
-          end: Vec1D,
+@overload
+def arrow(start: Point2D, end: Point2D,
+          *args: Any,
+          **kwargs: Any) -> None:
+    pass
+
+
+@overload
+def arrow(start: Point3D, end: Point3D,
+          *args: Any,
+          **kwargs: Any) -> None:
+    pass
+
+
+def arrow(start: Point2D | Point3D,
+          end: Point2D | Point3D,
           *args: Any,
           **kwargs: Any) -> None:
     '''Plot an arrow to the current Axes or Axes3D.
@@ -313,7 +333,7 @@ def contour(fun: Callable[[float, float], float],
             cmap: str = CONTOUR_CMAP,
             colorbar: bool = True,
             alpha: float = 0.5) -> None:
-    '''Plot a contour map to the current Axes or Axes3D.
+    '''Plot a contour map to the current Axes3D.
 
     Args:
         fun: The function to plot.
