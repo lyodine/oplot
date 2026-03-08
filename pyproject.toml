@@ -1,7 +1,7 @@
 [project]
 
 name = "ograph"
-version = "0.1.1"
+version = "1.0.0"
 description = "Experimental Matplotlib API"
 dependencies = ["matplotlib>=3.8.4"]
 requires-python = ">= 3.12.0"
@@ -12,13 +12,13 @@ authors = [
 
 readme = "README.md"
 
-license = {file = "LICENSE.txt"}
+license-files = ["LICENSE.md"]
 
 keywords = []
 
 # Overtagging
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 5 - Production/Stable",
 
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
@@ -26,11 +26,18 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: Implementation :: CPython",
 
-    "Natural Language :: English  ",
-    "Topic :: Software Development :: Libraries :: Python Modules ",
+    "Topic :: Software Development :: Libraries :: Python Modules",
     "Typing :: Typed",
 ]
 
 [build-system]
 requires = ["setuptools > 60.1.1"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages]
+# packages = ["evokit"]
+find = {}
+
+[project.urls]
+Documentation = "https://yidingli.com/docs/ograph/"
+Repository = "https://yidingli.com/projects/ograph/"
