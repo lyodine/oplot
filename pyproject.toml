@@ -1,7 +1,7 @@
 [project]
 
 name = "ograph"
-version = "1.0.0"
+version = "1.1.0"
 description = "Experimental Matplotlib API"
 dependencies = ["matplotlib>=3.8.4"]
 requires-python = ">= 3.12.0"
