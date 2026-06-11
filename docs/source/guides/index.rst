@@ -8,6 +8,8 @@ Base Classes
 
 * Plotting swarms of points in 2-D: :doc:`examples/swarm`
 
+* Plotting the Slime Mould Algorithm: :doc:`examples/sma`
+
 .. toctree::
    :maxdepth: 2
    :caption: What:
@@ -15,6 +17,7 @@ Base Classes
 
    examples/oplot.ipynb
    examples/swarm.ipynb
+   examples/sma.ipynb
 
    
 
