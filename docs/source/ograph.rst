@@ -1,14 +1,6 @@
 ograph package
 ==============
 
-Subpackages
------------
-
-.. toctree::
-   :maxdepth: 4
-
-   ograph.applications
-
 Submodules
 ----------
 
@@ -48,6 +40,16 @@ ograph.oplot module
    :parts: 1
 
 .. automodule:: ograph.oplot
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ograph.swarm module
+-------------------
+.. inheritance-diagram:: ograph.swarm
+   :parts: 1
+
+.. automodule:: ograph.swarm
    :members:
    :undoc-members:
    :show-inheritance:

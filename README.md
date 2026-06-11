@@ -1,5 +1,5 @@
 <p align="center">
-<img src="./media/alternative_logo.png" width=100>
+<img src="https://github.com/lyodine/ograph/blob/main/media/logo.png" width=100>
 </p>
 
 
@@ -33,7 +33,7 @@ The library have the following modules:
 | [oplot](./ograph/oplot/) | Plot to the current axes  |
 | [oconfig](./ograph/oconfig/)                       | Configure plots            |
 | [ofunc](./ograph/ofunc/) | Supply test functions and matrices |
-| [applications.swarm](./ograph/applications/swarm/) | Plot point clusters |
+| [swarm](./ograph/swarm/) | Plot point clusters |
 
 The ograph.oplot library contains the following plotters: 
 
